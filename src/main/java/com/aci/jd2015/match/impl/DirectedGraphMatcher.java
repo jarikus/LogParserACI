@@ -5,6 +5,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.commons.codec.digest.DigestUtils;
+
 import com.aci.jd2015.match.Matcher;
 import com.aci.jd2015.model.MessageString;
 import com.aci.jd2015.model.MessageStringType;
@@ -20,7 +22,7 @@ public class DirectedGraphMatcher implements Matcher {
 			if (headIndex == -1) {
 				return null;
 			} else {
-				
+
 				Iterator<MessageString> crcIterator = crcs.iterator();
 				while (crcIterator.hasNext()) {
 					MessageString messageStringCrc = crcIterator.next();
@@ -42,9 +44,9 @@ public class DirectedGraphMatcher implements Matcher {
 							headIterator.remove();
 							crcIterator.remove();
 							all.removeAll(result);
+							String resultMessage = generateResultMessage(result);
+							return resultMessage;
 						}
-						String resultMessage = generateResultMessage(result);
-						return resultMessage;
 					}
 				}
 
@@ -65,6 +67,8 @@ public class DirectedGraphMatcher implements Matcher {
 
 
 	class ArrayProcessor {
+
+		private final static int CRC_ = 4;
 
 		private List<MessageString> toProcess;
 		private MessageString head;
@@ -101,19 +105,17 @@ public class DirectedGraphMatcher implements Matcher {
 				List<MessageString> resultList = new ArrayList<>();
 				resultList.add(head);
 				for (Integer index : matchedSequence) {
-					resultList.add(toProcess.get(index));
+					resultList.add(toProcess.get(index + 1));
 				}
 				resultList.add(crc);
 				return resultList;
+			} else {
+				return null;
 			}
-			return null;
 		}
 
 		private void createAdjacencyMatrix () {
-			matrix = new int[matrixSize][];
-			for (int[] arr : matrix) {
-				arr = new int[matrixSize];
-			}
+			matrix = new int[matrixSize][matrixSize];
 			for (int i = 0; i < matrixSize; i++) {
 				for (int j = 0; j < matrixSize; j++) {
 					if (i < j) {
@@ -127,44 +129,68 @@ public class DirectedGraphMatcher implements Matcher {
 
 		private List<Integer> bypass(int[][] matrix) {
 			for (int i = 0; i < matrixSize; i++) {
-				List<Integer> resultSequence = recursiveBypass(new ArrayList<Integer>(), i);
+				List<Integer> resultSequence = checkOneElementMessage();
 				if (resultSequence != null) {
 					return resultSequence;
+				} else {
+					List<Integer> sequence = new ArrayList<Integer>();
+					sequence.add(i);
+					resultSequence = recursiveBypass(sequence, i);
+					if (resultSequence != null) {
+						return resultSequence;
+					}
+				}
+			}
+			return null;
+		}
+
+		private List<Integer> checkOneElementMessage(){
+			for (int i = 0; i < matrixSize; i++) {
+				List<Integer> sequence = new ArrayList<Integer>();
+				sequence.add(i);
+				boolean isValid = isValidMessage(sequence);
+				if (isValid) {
+					return sequence;
 				}
 			}
 			return null;
 		}
 
 		private List<Integer> recursiveBypass(List<Integer> currentSequence, int begin) {
-			for (int j = 0; j < matrixSize; j++) {
-				if ((begin == j) && (currentSequence.isEmpty())) {
-					currentSequence.add(j);
-					boolean isValid = isValidMessage(currentSequence);
-					if (isValid) {
-						return currentSequence;
-					} else {
-						currentSequence.clear();
-					}
-				}
+			for (int j = begin + 1; j < matrixSize; j++) {
 				if (matrix[begin][j] == 1) {
 					currentSequence.add(j);
 					boolean isValid = isValidMessage(currentSequence);
 					if (isValid) {
 						return currentSequence;
 					} else {
-						List<Integer> copy = new ArrayList<>();
-						Collections.copy(copy, currentSequence);
-						return recursiveBypass(copy, j);
+						List<Integer> copy = new ArrayList<>(currentSequence);
+						copy = recursiveBypass(copy, j);
+						if (copy == null) {
+							currentSequence.remove(new Integer(j));
+							continue;
+						} else {
+							return copy;
+						}
 					}
 				}
 			}
-
 			return null;
 		}
 
 		private boolean isValidMessage(List<Integer> sequence) {
-
-			return false;
+			StringBuilder stringBuilder = new StringBuilder();
+			stringBuilder.append(head.getString());
+			for (Integer i : sequence) {
+				stringBuilder.append(toProcess.get(i + 1).getString());
+			}
+			String md5FromMessageString = crc.getString().substring(CRC_);
+			String md5Generated = DigestUtils.md5Hex(stringBuilder.toString());
+			if (md5FromMessageString.equals(md5Generated)) {
+				return true;
+			} else {
+				return false;
+			}
 		}
 
 	}

@@ -40,6 +40,11 @@ public class MessageString {
 		return true;
 	}
 
+	@Override
+	public String toString() {
+		return string;
+	}
+
 	public String getString() {
 		return string;
 	}

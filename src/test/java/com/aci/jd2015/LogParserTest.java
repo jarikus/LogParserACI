@@ -12,6 +12,8 @@ import java.io.OutputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 
+import com.aci.jd2015.impl.LogParserImpl;
+
 public class LogParserTest {
   public static void startProcessCheck(LogParser parser, String inFileName, String checkFileName)
       throws IOException {
@@ -49,7 +51,7 @@ public class LogParserTest {
 
   @Test
   public void testExample1Process() throws Exception {
-    //startProcessCheck(new LogParser(), "/testExample1.log", "/testExample1_answer.log");
+    startProcessCheck(new LogParserImpl(), "/testExample1.log", "/testExample1_answer.log");
   }
 
   @Test
