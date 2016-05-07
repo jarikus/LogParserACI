@@ -42,8 +42,8 @@ public class LogParserImpl implements LogParser {
 
 	@Override
 	public void process(InputStream is, OutputStream os) throws IOException {
-		BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(is));
-		BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(os));
+		BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+		BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"));
 		
 		String temp;
 		MessageString messageString;
