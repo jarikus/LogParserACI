@@ -83,9 +83,7 @@ public class LogParserImpl implements LogParser {
 				bufferedWriter.write(message.getMessage());
 			}
 		}
-		bufferedReader.close();
 		bufferedWriter.flush();
-		bufferedWriter.close();
 	}
 	
 

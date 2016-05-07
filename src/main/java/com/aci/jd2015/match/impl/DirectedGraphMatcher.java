@@ -15,41 +15,43 @@ public class DirectedGraphMatcher implements Matcher {
 
 	@Override
 	public List<MessageString> lookOver(List<MessageString> heads, List<MessageString> crcs, List<MessageString> all) {
-		
-		Iterator<MessageString> headIterator = heads.iterator();
-		while (headIterator.hasNext()) {
-			MessageString messageStringHead = headIterator.next();
-			int headIndex = all.indexOf(messageStringHead);
-			if (headIndex == -1) {
-				return null;
-			} else {
+		if (heads != null && crcs != null && all != null) {
 
-				Iterator<MessageString> crcIterator = crcs.iterator();
-				while (crcIterator.hasNext()) {
-					MessageString messageStringCrc = crcIterator.next();
-					int crcIndex = all.indexOf(messageStringCrc);
-					if (headIndex < crcIndex) {
-						List<MessageString> toSortOut = new ArrayList<>();
-						toSortOut.add(messageStringHead);
-						for (int i = headIndex + 1; i < crcIndex; i++) {
-							MessageString temp = all.get(i);
-							if (temp.getType().equals(MessageStringType.PLAIN)) {
-								toSortOut.add(temp);
+			Iterator<MessageString> headIterator = heads.iterator();
+			while (headIterator.hasNext()) {
+				MessageString messageStringHead = headIterator.next();
+				int headIndex = all.indexOf(messageStringHead);
+				if (headIndex == -1) {
+					return null;
+				} else {
+
+					Iterator<MessageString> crcIterator = crcs.iterator();
+					while (crcIterator.hasNext()) {
+						MessageString messageStringCrc = crcIterator.next();
+						int crcIndex = all.indexOf(messageStringCrc);
+						if (headIndex < crcIndex) {
+							List<MessageString> toSortOut = new ArrayList<>();
+							toSortOut.add(messageStringHead);
+							for (int i = headIndex + 1; i < crcIndex; i++) {
+								MessageString temp = all.get(i);
+								if (temp.getType().equals(MessageStringType.PLAIN)) {
+									toSortOut.add(temp);
+								}
+							}
+							toSortOut.add(messageStringCrc);
+
+							ArrayProcessor arrayProcessor = new ArrayProcessor(toSortOut);
+							List<MessageString> result = arrayProcessor.process();
+							if (result != null) {
+								headIterator.remove();
+								crcIterator.remove();
+								all.removeAll(result);
+								return result;
 							}
 						}
-						toSortOut.add(messageStringCrc);
-
-						ArrayProcessor arrayProcessor = new ArrayProcessor(toSortOut);
-						List<MessageString> result = arrayProcessor.process();
-						if (result != null) {
-							headIterator.remove();
-							crcIterator.remove();
-							all.removeAll(result);
-							return result;
-						}
 					}
-				}
 
+				}
 			}
 		}
 		return null;
@@ -76,17 +78,10 @@ public class DirectedGraphMatcher implements Matcher {
 
 		public List<MessageString> process() {
 
-			List<Integer> sequence = new ArrayList<Integer>() {{
-				add(new Integer(0));
-			}};
-			boolean validMessage = isValidMessage(sequence);
-			if (validMessage) {
-				List<MessageString> resultList = new ArrayList<>();
-				resultList.add(head);
-				resultList.add(crc);
-				return resultList;
-			}
-			if (toProcess.size() == 2) {
+			List<MessageString> resul2ElementList = checkTwoElementMessage();
+			if (resul2ElementList != null) {
+				return resul2ElementList;
+			} else if (toProcess.size() == 2) {
 				return null;
 			}
 
@@ -120,11 +115,11 @@ public class DirectedGraphMatcher implements Matcher {
 		}
 
 		private List<Integer> bypass(int[][] matrix) {
-			for (int i = 0; i < matrixSize; i++) {
-				List<Integer> resultSequence = checkOneElementMessage();
-				if (resultSequence != null) {
-					return resultSequence;
-				} else {
+			List<Integer> resultSequence = checkThreeElementMessage();
+			if (resultSequence != null) {
+				return resultSequence;
+			} else {
+				for (int i = 0; i < matrixSize; i++) {
 					List<Integer> sequence = new ArrayList<Integer>();
 					sequence.add(i);
 					resultSequence = recursiveBypass(sequence, i);
@@ -136,13 +131,28 @@ public class DirectedGraphMatcher implements Matcher {
 			return null;
 		}
 
-		private List<Integer> checkOneElementMessage(){
+		private List<MessageString> checkTwoElementMessage() {
+			String md5FromMessageString = crc.getString().substring(CRC_);
+			String md5Generated = DigestUtils.md5Hex(head.getString());
+			if (md5FromMessageString.equals(md5Generated)) {
+				List<MessageString> resultList = new ArrayList<>();
+				resultList.add(head);
+				resultList.add(crc);
+				return resultList;
+			} else {
+				return null;
+			}
+		}
+
+		private List<Integer> checkThreeElementMessage(){
+			List<Integer> sequence = new ArrayList<Integer>();
 			for (int i = 0; i < matrixSize; i++) {
-				List<Integer> sequence = new ArrayList<Integer>();
 				sequence.add(i);
 				boolean isValid = isValidMessage(sequence);
 				if (isValid) {
 					return sequence;
+				} else {
+					sequence.clear();
 				}
 			}
 			return null;

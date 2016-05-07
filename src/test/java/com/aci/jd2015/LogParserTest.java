@@ -58,4 +58,29 @@ public class LogParserTest {
 	public void testExample2Process() throws Exception {
 		startProcessCheck(new LogParserImpl(), "/testExample2.log", "/testExample2_answer.log");
 	}
+	
+	@Test
+	public void testExampleMissedCrcAndHeadProcess() throws Exception {
+		startProcessCheck(new LogParserImpl(), "/testExample3.log", "/testExample3_answer.log");
+	}
+	
+	@Test
+	public void testExampleBadCrcsProcess() throws Exception {
+		startProcessCheck(new LogParserImpl(), "/testExample4.log", "/testExample4_answer.log");
+	}
+	
+	@Test
+	public void testExampleProcessSameTimestamp() throws Exception {
+		startProcessCheck(new LogParserImpl(), "/testExample5.log", "/testExample5_answer.log");
+	}
+	
+	@Test
+	public void testExamplePlainStringBeforeHeadProcess() throws Exception {
+		startProcessCheck(new LogParserImpl(), "/testExample6.log", "/testExample6_answer.log");
+	}
+	
+	@Test
+	public void testExampleTwoAndThreeStringMessagesProcess() throws Exception {
+		startProcessCheck(new LogParserImpl(), "/testExample7.log", "/testExample7_answer.log");
+	}
 }
