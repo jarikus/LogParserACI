@@ -14,7 +14,8 @@ import com.aci.jd2015.model.MessageStringType;
 public class DirectedGraphMatcher implements Matcher {
 
 	@Override
-	public String lookOver(List<MessageString> heads, List<MessageString> crcs, List<MessageString> all) {
+	public List<MessageString> lookOver(List<MessageString> heads, List<MessageString> crcs, List<MessageString> all) {
+		
 		Iterator<MessageString> headIterator = heads.iterator();
 		while (headIterator.hasNext()) {
 			MessageString messageStringHead = headIterator.next();
@@ -44,8 +45,7 @@ public class DirectedGraphMatcher implements Matcher {
 							headIterator.remove();
 							crcIterator.remove();
 							all.removeAll(result);
-							String resultMessage = generateResultMessage(result);
-							return resultMessage;
+							return result;
 						}
 					}
 				}
@@ -55,18 +55,10 @@ public class DirectedGraphMatcher implements Matcher {
 		return null;
 	}
 
-	private String generateResultMessage(List<MessageString> result) {
-		StringBuilder stringBuilder = new StringBuilder();
-		for (MessageString messageString : result) {
-			stringBuilder.append(messageString.getString()).append('\n');
-		}
-		stringBuilder.deleteCharAt(stringBuilder.lastIndexOf("\n"));
-		return stringBuilder.toString();
-	}
 
 
 
-	class ArrayProcessor {
+	private class ArrayProcessor {
 
 		private final static int CRC_ = 4;
 
