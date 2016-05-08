@@ -73,12 +73,12 @@ public class LogParserImpl implements LogParser {
 					Message message = generateResultMessage(result);
 					if (message != null) {
 						messages.add(message);
-						Collections.sort(messages);
 					}
 				}
 			}
 		}
 		if (!messages.isEmpty()) {
+			Collections.sort(messages);
 			for (Message message : messages) {
 				bufferedWriter.write(message.getMessage());
 			}
