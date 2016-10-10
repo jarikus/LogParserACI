@@ -4,6 +4,7 @@ import java.util.Date;
 
 public class Message implements Comparable<Message>{
 // кусок кода какой-то
+	//еще кусок какого-то кода
 	private final Date datetime;
 	private final String message;
 
