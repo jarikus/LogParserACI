@@ -3,7 +3,7 @@ package com.aci.jd2015.model;
 import java.util.Date;
 
 public class Message implements Comparable<Message>{
-
+// кусок кода какой-то
 	private final Date datetime;
 	private final String message;
 
